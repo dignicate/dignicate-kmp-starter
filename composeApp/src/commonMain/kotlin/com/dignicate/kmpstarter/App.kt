@@ -16,3 +16,4 @@ fun App() {
             contentAlignment = Alignment.Center
         ) { Text("Dignicate KMP Starter") }
     }
+}

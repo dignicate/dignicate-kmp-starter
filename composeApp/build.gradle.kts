@@ -22,6 +22,9 @@ kotlin {
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
+        androidMain.dependencies {
+            implementation("androidx.activity:activity-compose:1.9.3")
+        }
     }
 }
 

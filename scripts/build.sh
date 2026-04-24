@@ -69,6 +69,12 @@ esac
 echo
 echo "--- Syncing Configuration Files ---"
 
+# Load icon generation module
+source "$(dirname "$0")/modules/icon.sh"
+
+# Generate icons for the selected environment
+generate_icons "$ENV"
+
 # === 4. クリーンアップ ===
 echo
 if [ "$CODEGEN_ONLY" -eq 0 ]; then

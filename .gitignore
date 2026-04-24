@@ -16,3 +16,8 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 .kotlin/
+
+# Generated Icons
+composeApp/src/androidMain/res/mipmap-*/ic_launcher*.png
+iosApp/**/AppIcon.appiconset/*.png
+!iosApp/**/AppIcon.appiconset/Contents.json

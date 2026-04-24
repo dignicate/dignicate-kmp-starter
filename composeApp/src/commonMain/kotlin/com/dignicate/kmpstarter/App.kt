@@ -9,11 +9,11 @@ import com.dignicate.kmpstarter.core.LocalCoordinator
 import com.dignicate.kmpstarter.core.MainTab
 import com.dignicate.kmpstarter.ui.components.MainNavigationContainer
 import com.dignicate.kmpstarter.ui.screens.LaunchScreen
-
+import com.dignicate.kmpstarter.ui.screens.SettingsScreen
 import com.dignicate.kmpstarter.core.getAppVersion
 
 enum class Screen {
-    Launch, Home
+    Launch, Home, Settings
 }
 
 @Composable
@@ -49,12 +49,13 @@ fun App() {
                 selectedTab = MainTab.MENU
             }
             override fun goToSettings() {
-                // Dummy navigation
-                println("Navigating to Settings...")
+                currentScreen = Screen.Settings
             }
             override fun pop() {
-                if (currentScreen == Screen.Home) {
-                    currentScreen = Screen.Launch
+                when (currentScreen) {
+                    Screen.Settings -> currentScreen = Screen.Home
+                    Screen.Home -> currentScreen = Screen.Launch
+                    else -> {}
                 }
             }
         }
@@ -71,6 +72,7 @@ fun App() {
                     selectedTab = selectedTab,
                     onTabSelected = { selectedTab = it }
                 )
+                Screen.Settings -> SettingsScreen()
             }
         }
     }

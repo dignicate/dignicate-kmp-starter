@@ -10,13 +10,20 @@ import com.dignicate.kmpstarter.core.MainTab
 import com.dignicate.kmpstarter.ui.components.MainNavigationContainer
 import com.dignicate.kmpstarter.ui.screens.LaunchScreen
 
+import com.dignicate.kmpstarter.core.getAppVersion
+
 enum class Screen {
     Launch, Home
 }
 
 @Composable
 fun App() {
-    val appConfig = remember { AppConfig(version = "1.0.0", environment = "dev") }
+    val appConfig = remember { 
+        AppConfig(
+            version = getAppVersion(),
+            environment = "dev" 
+        ) 
+    }
     var currentScreen by remember { mutableStateOf(Screen.Launch) }
     var selectedTab by remember { mutableStateOf(MainTab.HOME) }
 

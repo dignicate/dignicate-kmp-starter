@@ -215,18 +215,48 @@ case "$build_input" in
 
     IFS='|' read -r selected_id selected_info selected_type <<< "${device_entries[$((device_idx-1))]}"
 
+    if [ "$selected_type" == "ios-device" ]; then
+      echo
+      echo "[!] Running on physical iOS devices via CLI is not fully supported."
+      echo "Please use Xcode to run on physical devices."
+      exit 1
+    fi
+
+    # 実行コマンドの構築
     if [ "$selected_type" == "android" ]; then
-      echo "Executing: ./gradlew :composeApp:installDebug ${GRADLE_ARGS[*]}"
+      CMD="./gradlew :composeApp:installDebug ${GRADLE_ARGS[*]}"
+      RUN_CMD="./gradlew :composeApp:installDebug ${GRADLE_ARGS[*]} && adb -s $selected_id shell am start -n com.dignicate.kmpstarter/com.dignicate.kmpstarter.MainActivity"
+    elif [ "$selected_type" == "ios-sim" ]; then
+      CMD="xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator -destination \"id=$selected_id\" build"
+      # iOS実行は複数ステップになるため、主要なビルドコマンドを表示
+      RUN_CMD="xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator -destination \"id=$selected_id\" build"
+    fi
+
+    echo
+    echo "Ready to deploy to: $selected_info"
+    echo "Command: $CMD"
+    echo
+    read -rp "Run directly or copy to clipboard? [c/r] (default: r): " action
+    action=${action:-r}
+
+    if [ "$action" = "c" ]; then
+      if command -v pbcopy &> /dev/null; then
+        printf "%s" "$CMD" | pbcopy
+        echo "Command copied to clipboard."
+      else
+        echo "pbcopy not found. Command:"
+        echo "$CMD"
+      fi
+      exit 0
+    else
+      echo "Executing: $CMD"
+    fi
+
+    if [ "$selected_type" == "android" ]; then
       ./gradlew :composeApp:installDebug "${GRADLE_ARGS[@]}"
       echo "Starting app on $selected_id..."
       adb -s "$selected_id" shell am start -n com.dignicate.kmpstarter/com.dignicate.kmpstarter.MainActivity
-    elif [ "$selected_type" == "ios-sim" ] || [ "$selected_type" == "ios-device" ]; then
-      if [ "$selected_type" == "ios-device" ]; then
-        echo "[!] Running on physical iOS devices via CLI is not fully supported."
-        echo "Please use Xcode to run on physical devices."
-        exit 1
-      fi
-
+    elif [ "$selected_type" == "ios-sim" ]; then
       echo "Building for iOS Simulator ($selected_id)..."
       xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj \
                  -scheme kmpstarter \

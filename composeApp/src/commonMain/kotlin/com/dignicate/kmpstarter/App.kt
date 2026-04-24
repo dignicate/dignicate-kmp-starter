@@ -10,6 +10,7 @@ import com.dignicate.kmpstarter.core.MainTab
 import com.dignicate.kmpstarter.ui.components.MainNavigationContainer
 import com.dignicate.kmpstarter.ui.screens.LaunchScreen
 import com.dignicate.kmpstarter.ui.screens.SettingsScreen
+import com.dignicate.kmpstarter.core.CommonBackHandler
 import com.dignicate.kmpstarter.core.getAppVersion
 
 enum class Screen {
@@ -29,9 +30,8 @@ fun App() {
 
     val coordinator = remember {
         object : Coordinator {
-            override fun goToLaunch() {
-                currentScreen = Screen.Launch
-            }
+            // ... (keep previous overrides)
+            override fun goToLaunch() { currentScreen = Screen.Launch }
             override fun goToHome() {
                 currentScreen = Screen.Home
                 selectedTab = MainTab.HOME
@@ -54,11 +54,16 @@ fun App() {
             override fun pop() {
                 when (currentScreen) {
                     Screen.Settings -> currentScreen = Screen.Home
-                    Screen.Home -> currentScreen = Screen.Launch
+                    // Home画面ではこれ以上戻らない（OSに任せる）
                     else -> {}
                 }
             }
         }
+    }
+
+    // Home画面（ルート）以外の時だけ、カスタムの戻る処理（coordinator.pop）を有効にする
+    CommonBackHandler(enabled = currentScreen == Screen.Settings) {
+        coordinator.pop()
     }
 
     CompositionLocalProvider(

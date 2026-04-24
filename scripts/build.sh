@@ -2,6 +2,13 @@
 
 set -euo pipefail
 
+# Calculate script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Move to project root to ensure relative paths in gradlew work as expected
+cd "$PROJECT_ROOT"
+
 # === 1. 環境チェック ===
 echo "=== Environment Check ==="
 
@@ -11,7 +18,7 @@ if ! command -v java &> /dev/null; then
 fi
 
 if [ ! -f "./gradlew" ]; then
-  echo "[!] gradlew not found in the root directory. Please run this script from the project root."
+  echo "[!] gradlew not found in the root directory: $PROJECT_ROOT"
   exit 1
 fi
 
@@ -69,11 +76,11 @@ esac
 echo
 echo "--- Syncing Configuration Files ---"
 
-# Load icon generation module
-source "$(dirname "$0")/modules/icon.sh"
+# Load icon generation module using SCRIPT_DIR
+source "$SCRIPT_DIR/modules/icon.sh"
 
-# Generate icons for the selected environment
-generate_icons "$ENV"
+# Generate icons for the selected environment, passing PROJECT_ROOT
+generate_icons "$ENV" "$PROJECT_ROOT"
 
 # === 4. クリーンアップ ===
 echo
@@ -149,14 +156,12 @@ case "$build_input" in
           connection_label=" (wireless)"
         fi
 
-        # Flutter の出力形式に合わせる: Name (mobile), Android Version (API Level) (emulator) (ID)
         device_entries+=("$id|$model$connection_label (mobile), Android $version (API $api)$type_label|android")
       done <<< "$adb_out"
     fi
 
     # --- iOS デバイス検出 (macOS のみ) ---
     if [[ "$(uname)" == "Darwin" ]] && command -v xcrun &> /dev/null; then
-      # 起動中のシミュレータ
       ios_sims=$(xcrun simctl list devices | grep "(Booted)" || true)
       while IFS= read -r line; do
         [ -z "$line" ] && continue
@@ -164,31 +169,24 @@ case "$build_input" in
         if [[ $line =~ (.*)\ \(([0-9A-F-]+)\)\ \(Booted\) ]]; then
           name="${BASH_REMATCH[1]}"
           id="${BASH_REMATCH[2]}"
-          # Runtime ID の取得
           runtime_id=$(xcrun simctl list devices | grep -B 10 "$id" | grep "iOS" | tail -n 1 | sed -E 's/-- (.*) --/\1/' | sed 's/iOS/com.apple.CoreSimulator.SimRuntime.iOS/' | sed 's/ /-/g' | sed 's/\./-/g' || echo "")
           device_entries+=("$id|$name (mobile), $runtime_id (simulator)|ios-sim")
         fi
       done <<< "$ios_sims"
 
-      # 物理デバイス (USB / 無線)
       ios_devices=$(xcrun xctrace list devices 2>/dev/null | grep -v "SDKs" | grep "([0-9A-F]" || true)
       while IFS= read -r line; do
         [ -z "$line" ] && continue
         if [[ $line =~ ^(.*)\ \(([0-9A-F]{8}-[0-9A-F]{16}|[0-9A-F]{40})\) ]]; then
            full_info="${BASH_REMATCH[1]}"
            id="${BASH_REMATCH[2]}"
-           # すでに登録済み（シミュレータ）でないかチェック
            is_duplicate=false
            for entry in "${device_entries[@]}"; do
              if [[ "$entry" == *"$id"* ]]; then is_duplicate=true; break; fi
            done
            if [ "$is_duplicate" = false ]; then
-             # 名前と OS 情報を分離 (xctrace の出力例: "iPhone 15 Pro (17.4) (0000...)" )
              name=$(echo "$full_info" | sed -E 's/ \(.*\)$//')
              os_info=$(echo "$full_info" | grep -oE '\([0-9.]+\)' | tr -d '()' || echo "iOS")
-
-             # 無線接続判定 (xctrace 出力に "unavailable" 等が含まれる場合はスキップされるが、基本は接続済みのもの)
-             # Flutter のように (wireless) を付与するのは難しいが、可能な限り情報を載せる
              device_entries+=("$id|$name (mobile), iOS $os_info (physical)|ios-device")
            fi
         fi
@@ -228,14 +226,10 @@ case "$build_input" in
       exit 1
     fi
 
-    # 実行コマンドの構築
     if [ "$selected_type" == "android" ]; then
       CMD="./gradlew :composeApp:installDebug ${GRADLE_ARGS[*]}"
-      RUN_CMD="./gradlew :composeApp:installDebug ${GRADLE_ARGS[*]} && adb -s $selected_id shell am start -n com.dignicate.kmpstarter/com.dignicate.kmpstarter.MainActivity"
     elif [ "$selected_type" == "ios-sim" ]; then
       CMD="xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator -destination \"id=$selected_id\" build"
-      # iOS実行は複数ステップになるため、主要なビルドコマンドを表示
-      RUN_CMD="xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator -destination \"id=$selected_id\" build"
     fi
 
     echo

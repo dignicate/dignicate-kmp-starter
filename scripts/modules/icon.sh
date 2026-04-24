@@ -7,7 +7,8 @@ set -euo pipefail
 
 generate_icons() {
   local env=$1
-  local base_image="config/icons/$env/base.png"
+  local project_root=$2
+  local base_image="$project_root/config/icons/$env/base.png"
 
   echo
   echo "--- Generating icons for environment: $env ---"
@@ -33,10 +34,9 @@ generate_icons() {
 
   # 3. Android Icons
   echo "Generating Android icons..."
-  local android_res_dir="composeApp/src/androidMain/res"
+  local android_res_dir="$project_root/composeApp/src/androidMain/res"
 
   # Sizes for Android (standard launcher icons)
-  # key: directory name, value: size in pixels
   declare -A android_sizes=(
     ["mipmap-mdpi"]="48x48"
     ["mipmap-hdpi"]="72x72"
@@ -50,19 +50,18 @@ generate_icons() {
     local target_dir="$android_res_dir/$dir"
     mkdir -p "$target_dir"
 
-    # Generate ic_launcher.png
+    # Generate ic_launcher.png and ic_launcher_round.png
     $im_cmd "$base_image" -resize "$size" "$target_dir/ic_launcher.png"
-    # Generate ic_launcher_round.png (using the same for now)
     $im_cmd "$base_image" -resize "$size" "$target_dir/ic_launcher_round.png"
   done
 
   # 4. iOS Icons
   echo "Generating iOS icons..."
-  # Automatically find AppIcon.appiconset
-  local ios_icon_dir=$(find iosApp -name "AppIcon.appiconset" -type d -print -quit)
+  local ios_app_dir="$project_root/iosApp"
+  local ios_icon_dir=$(find "$ios_app_dir" -name "AppIcon.appiconset" -type d -print -quit)
 
   if [ -z "$ios_icon_dir" ]; then
-    echo "[!] Could not find AppIcon.appiconset in iosApp directory."
+    echo "[!] Could not find AppIcon.appiconset in $ios_app_dir"
     return 1
   fi
 
@@ -94,9 +93,11 @@ generate_icons() {
     $im_cmd "$base_image" -resize "$size" "$ios_icon_dir/$filename"
   done
 
-  # Generate/Update Contents.json
-  # We generate it to ensure consistency with the files we just created.
-  cat <<EOF > "$ios_icon_dir/Contents.json"
+  # 5. Handle Contents.json
+  # Create if missing, but do not overwrite if exists.
+  if [ ! -f "$ios_icon_dir/Contents.json" ]; then
+    echo "Creating missing Contents.json..."
+    cat <<EOF > "$ios_icon_dir/Contents.json"
 {
   "images" : [
     { "size" : "20x20", "idiom" : "iphone", "filename" : "icon-20x20@2x.png", "scale" : "2x" },
@@ -125,6 +126,7 @@ generate_icons() {
   }
 }
 EOF
+  fi
 
   echo "Icon generation completed."
 }

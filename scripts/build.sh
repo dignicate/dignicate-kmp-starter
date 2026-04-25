@@ -9,6 +9,17 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Move to project root to ensure relative paths in gradlew work as expected
 cd "$PROJECT_ROOT"
 
+# Helper to open directory
+open_dir() {
+  if command -v open &> /dev/null; then
+    open "$1"
+  elif command -v xdg-open &> /dev/null; then
+    xdg-open "$1"
+  else
+    echo "[i] Build artifact location: $1"
+  fi
+}
+
 # === 1. 環境チェック ===
 echo "=== Environment Check ==="
 
@@ -104,7 +115,8 @@ echo
 echo "Select build type:"
 echo "  1 -> Android (aab)"
 echo "  2 -> Android (apk)"
-echo "  3 -> iOS (Simulator Build)"
+echo "  3 -> iOS (Ad-Hoc ipa)"
+echo "  4 -> iOS (App Store ipa)"
 echo "  else -> Run on Device"
 echo
 read -rp "Select: " build_input
@@ -112,16 +124,37 @@ read -rp "Select: " build_input
 case "$build_input" in
   1)
     ./gradlew :composeApp:bundleRelease "${GRADLE_ARGS[@]}"
+    open_dir "composeApp/build/outputs/bundle/release"
     ;;
   2)
     ./gradlew :composeApp:assembleDebug "${GRADLE_ARGS[@]}"
+    open_dir "composeApp/build/outputs/apk/debug"
     ;;
   3)
     if [[ "$(uname)" != "Darwin" ]]; then
       echo "[!] iOS build requires macOS."
       exit 1
     fi
-    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator build
+    echo "Building iOS Ad-Hoc..."
+    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Release -archivePath build/ios/AdHoc/kmpstarter.xcarchive archive
+    PLIST_PATH="$SCRIPT_DIR/exportOptions/AdHoc.plist"
+    if [ -f "$PLIST_PATH" ]; then
+      xcodebuild -exportArchive -archivePath build/ios/AdHoc/kmpstarter.xcarchive -exportPath build/ios/AdHoc -exportOptionsPlist "$PLIST_PATH"
+    fi
+    open_dir "build/ios/AdHoc"
+    ;;
+  4)
+    if [[ "$(uname)" != "Darwin" ]]; then
+      echo "[!] iOS build requires macOS."
+      exit 1
+    fi
+    echo "Building iOS App Store..."
+    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Release -archivePath build/ios/AppStore/kmpstarter.xcarchive archive
+    PLIST_PATH="$SCRIPT_DIR/exportOptions/AppStore.plist"
+    if [ -f "$PLIST_PATH" ]; then
+      xcodebuild -exportArchive -archivePath build/ios/AppStore/kmpstarter.xcarchive -exportPath build/ios/AppStore -exportOptionsPlist "$PLIST_PATH"
+    fi
+    open_dir "build/ios/AppStore"
     ;;
   *)
     # デバイス選択

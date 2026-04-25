@@ -3,22 +3,32 @@
 set -euo pipefail
 
 # Icon generation module for KMP project
-# Requires ImageMagick (convert or magick command)
+# Requires ImageMagick (magick command)
 
 generate_icons() {
   local env=$1
   local project_root=$2
-  local base_image="$project_root/config/icons/$env/ic_app.png"
+
+  if [[ ! "$env" =~ ^(dev|stg|prd)$ ]]; then
+    echo "[!] Invalid environment: $env. Must be one of dev, stg, prd."
+    return 1
+  fi
+
+  local icon_dir="$project_root/icons/$env"
+  local base_icon="$icon_dir/icon.png"
+  local foreground_icon="$icon_dir/foreground.png"
+  local background_icon="$icon_dir/background.png"
 
   echo
   echo "--- Generating icons for environment: $env ---"
 
-  # 1. Check if base image exists
-  if [ ! -f "$base_image" ]; then
-    echo "[!] Base image not found: $base_image"
-    echo "    Please place your 1024x1024 ic_app.png in config/icons/$env/"
-    return 1
-  fi
+  # 1. Check if source images exist
+  for img in "$base_icon" "$foreground_icon" "$background_icon"; do
+    if [ ! -f "$img" ]; then
+      echo "[!] Source image not found: $img"
+      return 1
+    fi
+  done
 
   # 2. Check for ImageMagick
   local im_cmd=""
@@ -32,11 +42,29 @@ generate_icons() {
     return 1
   fi
 
-  # 3. Android Icons
+  # 3. Android Icons (Adaptive & Legacy)
   echo "Generating Android icons..."
   local android_res_dir="$project_root/composeApp/src/androidMain/res"
 
-  # Use a standard array for compatibility with older Bash versions (like macOS's /bin/bash 3.2)
+  # Adaptive Icons (Android 8.0+)
+  local adaptive_dir="$android_res_dir/mipmap-anydpi-v26"
+  mkdir -p "$adaptive_dir"
+  mkdir -p "$android_res_dir/drawable"
+
+  # Generate foreground/background (1080x1080)
+  $im_cmd "$foreground_icon" -resize 1080x1080 "$android_res_dir/drawable/ic_launcher_foreground.png"
+  $im_cmd "$background_icon" -resize 1080x1080 "$android_res_dir/drawable/ic_launcher_background.png"
+
+  # Adaptive XML
+  local adaptive_xml='<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>'
+
+  echo "$adaptive_xml" > "$adaptive_dir/ic_launcher.xml"
+  echo "$adaptive_xml" > "$adaptive_dir/ic_launcher_round.xml"
+
+  # Legacy Icons
   local android_icons=(
     "mipmap-mdpi|48x48"
     "mipmap-hdpi|72x72"
@@ -49,10 +77,8 @@ generate_icons() {
     IFS="|" read -r dir size <<< "$item"
     local target_dir="$android_res_dir/$dir"
     mkdir -p "$target_dir"
-
-    # Generate ic_launcher.png and ic_launcher_round.png
-    $im_cmd "$base_image" -resize "$size" "$target_dir/ic_launcher.png"
-    $im_cmd "$base_image" -resize "$size" "$target_dir/ic_launcher_round.png"
+    $im_cmd "$base_icon" -resize "$size" "$target_dir/ic_launcher.png"
+    $im_cmd "$base_icon" -resize "$size" "$target_dir/ic_launcher_round.png"
   done
 
   # 4. iOS Icons
@@ -90,11 +116,10 @@ generate_icons() {
 
   for item in "${ios_icons[@]}"; do
     IFS="|" read -r filename size <<< "$item"
-    $im_cmd "$base_image" -resize "$size" "$ios_icon_dir/$filename"
+    $im_cmd "$base_icon" -resize "$size" "$ios_icon_dir/$filename"
   done
 
-  # 5. Handle Contents.json
-  # Create if missing, but do not overwrite if exists.
+  # Handle Contents.json (Generate only if missing)
   if [ ! -f "$ios_icon_dir/Contents.json" ]; then
     echo "Creating missing Contents.json..."
     cat <<EOF > "$ios_icon_dir/Contents.json"

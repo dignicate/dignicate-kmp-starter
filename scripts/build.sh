@@ -55,22 +55,21 @@ read -rp "Select (1-3): " env_input
 
 case "$env_input" in
   1)
-    ENV="prod"
-    GRADLE_ARGS=("-Penv=prod")
+    ENV="prd"
     ;;
   2)
     ENV="stg"
-    GRADLE_ARGS=("-Penv=stg")
     ;;
   3)
     ENV="dev"
-    GRADLE_ARGS=("-Penv=dev")
     ;;
   *)
     echo "Cancelled."
     exit 1
     ;;
 esac
+
+GRADLE_ARGS=("-Penv=$ENV")
 
 # === 3. 設定ファイルの同期 ===
 echo

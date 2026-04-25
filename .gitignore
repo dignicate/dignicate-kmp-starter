@@ -19,5 +19,8 @@ captures
 
 # Generated Icons
 composeApp/src/androidMain/res/mipmap-*/ic_launcher*.png
+composeApp/src/androidMain/res/mipmap-*/ic_launcher*.xml
+composeApp/src/androidMain/res/drawable/ic_launcher_foreground.png
+composeApp/src/androidMain/res/drawable/ic_launcher_background.png
 iosApp/**/AppIcon.appiconset/*.png
 !iosApp/**/AppIcon.appiconset/Contents.json

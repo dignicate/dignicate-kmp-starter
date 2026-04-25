@@ -8,7 +8,7 @@ set -euo pipefail
 generate_icons() {
   local env=$1
   local project_root=$2
-  local base_image="$project_root/config/icons/$env/base.png"
+  local base_image="$project_root/config/icons/$env/ic_app.png"
 
   echo
   echo "--- Generating icons for environment: $env ---"
@@ -16,7 +16,7 @@ generate_icons() {
   # 1. Check if base image exists
   if [ ! -f "$base_image" ]; then
     echo "[!] Base image not found: $base_image"
-    echo "    Please place your 1024x1024 base.png in config/icons/$env/"
+    echo "    Please place your 1024x1024 ic_app.png in config/icons/$env/"
     return 1
   fi
 

@@ -36,17 +36,17 @@ generate_icons() {
   echo "Generating Android icons..."
   local android_res_dir="$project_root/composeApp/src/androidMain/res"
 
-  # Sizes for Android (standard launcher icons)
-  declare -A android_sizes=(
-    ["mipmap-mdpi"]="48x48"
-    ["mipmap-hdpi"]="72x72"
-    ["mipmap-xhdpi"]="96x96"
-    ["mipmap-xxhdpi"]="144x144"
-    ["mipmap-xxxhdpi"]="192x192"
+  # Use a standard array for compatibility with older Bash versions (like macOS's /bin/bash 3.2)
+  local android_icons=(
+    "mipmap-mdpi|48x48"
+    "mipmap-hdpi|72x72"
+    "mipmap-xhdpi|96x96"
+    "mipmap-xxhdpi|144x144"
+    "mipmap-xxxhdpi|192x192"
   )
 
-  for dir in "${!android_sizes[@]}"; do
-    local size="${android_sizes[$dir]}"
+  for item in "${android_icons[@]}"; do
+    IFS="|" read -r dir size <<< "$item"
     local target_dir="$android_res_dir/$dir"
     mkdir -p "$target_dir"
 

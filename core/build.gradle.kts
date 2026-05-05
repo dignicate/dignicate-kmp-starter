@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
@@ -22,6 +24,12 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            implementation(compose.runtime)
+        }
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
         }
@@ -34,6 +42,11 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
+        buildConfigField("String", "VERSION_NAME", "\"${libs.versions.app.version.get()}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     compileOptions {

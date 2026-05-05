@@ -159,7 +159,7 @@ case "$build_input" in
   *)
     # デバイス選択
     echo "Scanning for available devices..."
-    device_entries=()
+    declare -a device_entries=()
 
     # --- Android デバイス検出 ---
     if command -v adb &> /dev/null; then
@@ -213,9 +213,11 @@ case "$build_input" in
            full_info="${BASH_REMATCH[1]}"
            id="${BASH_REMATCH[2]}"
            is_duplicate=false
-           for entry in "${device_entries[@]}"; do
-             if [[ "$entry" == *"$id"* ]]; then is_duplicate=true; break; fi
-           done
+           if [ ${#device_entries[@]} -gt 0 ]; then
+             for entry in "${device_entries[@]}"; do
+               if [[ "$entry" == *"$id"* ]]; then is_duplicate=true; break; fi
+             done
+           fi
            if [ "$is_duplicate" = false ]; then
              name=$(echo "$full_info" | sed -E 's/ \(.*\)$//')
              os_info=$(echo "$full_info" | grep -oE '\([0-9.]+\)' | tr -d '()' || echo "iOS")
@@ -227,6 +229,8 @@ case "$build_input" in
 
     if [ ${#device_entries[@]} -eq 0 ]; then
       echo "[!] No running Android or iOS devices found."
+      echo "    Start an Android emulator, connect an Android device with USB debugging,"
+      echo "    or boot an iOS Simulator, then run the script again."
       exit 1
     fi
 

@@ -27,6 +27,7 @@ kotlin {
             implementation(project(":viewmodel"))
             implementation(project(":domain"))
             implementation(project(":core"))
+            implementation(libs.koin.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

@@ -27,10 +27,6 @@ kotlin {
             implementation(project(":viewmodel"))
             implementation(project(":domain"))
             implementation(project(":core"))
-            implementation(libs.koin.core)
-        }
-        androidMain.dependencies {
-            implementation(libs.koin.android)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

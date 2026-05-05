@@ -11,22 +11,31 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
-import com.dignicate.kmpstarter.core.MainTab
+import com.dignicate.kmpstarter.ui.MainTab
 import com.dignicate.kmpstarter.ui.screens.CatalogTabScreen
 import com.dignicate.kmpstarter.ui.screens.HomeTabScreen
 import com.dignicate.kmpstarter.ui.screens.MenuTabScreen
 import com.dignicate.kmpstarter.ui.screens.SavedTabScreen
 import kotlinx.coroutines.launch
 
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-
 @Composable
 fun MainNavigationContainer(
     selectedTab: MainTab,
-    onTabSelected: (MainTab) -> Unit
+    onTabSelected: (MainTab) -> Unit,
+    version: String,
+    onOpenSettings: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -35,7 +44,11 @@ fun MainNavigationContainer(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            AppDrawer(onClose = { scope.launch { drawerState.close() } })
+            AppDrawer(
+                version = version,
+                onOpenSettings = onOpenSettings,
+                onClose = { scope.launch { drawerState.close() } }
+            )
         }
     ) {
         Scaffold(
@@ -58,8 +71,16 @@ fun MainNavigationContainer(
                                 Icon(
                                     imageVector = when (tab) {
                                         MainTab.HOME -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
-                                        MainTab.CATALOG -> if (selected) Icons.AutoMirrored.Filled.List else Icons.AutoMirrored.Outlined.List
-                                        MainTab.SAVED -> if (selected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
+                                        MainTab.CATALOG -> if (selected) {
+                                            Icons.AutoMirrored.Filled.List
+                                        } else {
+                                            Icons.AutoMirrored.Outlined.List
+                                        }
+                                        MainTab.SAVED -> if (selected) {
+                                            Icons.Filled.Favorite
+                                        } else {
+                                            Icons.Outlined.FavoriteBorder
+                                        }
                                         MainTab.MENU -> if (selected) Icons.Filled.Menu else Icons.Outlined.Menu
                                     },
                                     contentDescription = tab.label

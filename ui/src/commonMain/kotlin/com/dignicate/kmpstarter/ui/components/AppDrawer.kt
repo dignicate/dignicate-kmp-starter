@@ -1,29 +1,36 @@
 package com.dignicate.kmpstarter.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.dignicate.kmpstarter.core.LocalAppConfig
-import com.dignicate.kmpstarter.core.LocalCoordinator
 
 @Composable
 fun AppDrawer(
+    version: String,
+    onOpenSettings: () -> Unit,
     onClose: () -> Unit
 ) {
-    val coordinator = LocalCoordinator.current
-    val appConfig = LocalAppConfig.current
-
     ModalDrawerSheet {
         Column(
             modifier = Modifier.fillMaxHeight()
         ) {
-            // A. Header Section
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -38,20 +45,18 @@ fun AppDrawer(
                 )
             }
 
-            // B. Navigation Items Section
             Spacer(modifier = Modifier.height(12.dp))
             NavigationDrawerItem(
                 label = { Text("Settings") },
                 icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                 selected = false,
                 onClick = {
-                    coordinator.goToSettings()
+                    onOpenSettings()
                     onClose()
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
 
-            // C. Version Info Section (Footer)
             Spacer(modifier = Modifier.weight(1f))
             Box(
                 modifier = Modifier
@@ -60,7 +65,7 @@ fun AppDrawer(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "v${appConfig.version}",
+                    text = "v$version",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -9,16 +9,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.dignicate.kmpstarter.core.LocalCoordinator
 import kotlinx.coroutines.delay
 
 @Composable
-fun LaunchScreen() {
-    val coordinator = LocalCoordinator.current
-
+fun LaunchScreen(
+    onFinished: () -> Unit
+) {
     LaunchedEffect(Unit) {
-        delay(1000) // Simulate some initialization
-        coordinator.goToHome()
+        delay(1000)
+        onFinished()
     }
 
     Box(

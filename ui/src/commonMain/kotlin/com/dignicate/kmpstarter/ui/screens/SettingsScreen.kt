@@ -11,12 +11,15 @@ import androidx.compose.ui.Modifier
 import com.dignicate.kmpstarter.ui.components.CustomAppBar
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    onBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             CustomAppBar(
                 title = "Settings",
-                showBackButton = true
+                showBackButton = true,
+                onBackClick = onBack
             )
         }
     ) { paddingValues ->

@@ -17,9 +17,12 @@ class TimeUseCase(
     @OptIn(FlowPreview::class)
     val data: StateFlow<Resource<TimeInfo>> = _trigger
         .debounce(300.milliseconds)
-        .mapToResource(scope = scope) {
-            repository.getCurrentTime()
-        }
+        .mapToResource(
+            scope = scope,
+            then = {
+                repository.getCurrentTime()
+            },
+        )
 
     suspend fun fetch() {
         _trigger.emit(Unit)

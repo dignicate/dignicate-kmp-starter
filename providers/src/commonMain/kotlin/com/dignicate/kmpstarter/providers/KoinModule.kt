@@ -9,6 +9,7 @@ import com.dignicate.kmpstarter.domain.GreetingRepository
 import com.dignicate.kmpstarter.domain.TimeRepository
 import com.dignicate.kmpstarter.domain.TimeUseCase
 import com.dignicate.kmpstarter.viewmodel.GreetingViewModel
+import com.dignicate.kmpstarter.viewmodel.HomeViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
@@ -36,6 +37,7 @@ private val domainModule = module {
 
 private val viewModelModule = module {
     factory { GreetingViewModel(get()) }
+    factory { HomeViewModel(get()) }
 }
 
 val appModules = listOf(

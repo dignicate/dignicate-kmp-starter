@@ -23,13 +23,13 @@ import com.dignicate.kmpstarter.viewmodel.HomeViewModel
 
 @Composable
 fun HomeTabScreen(viewModel: HomeViewModel) {
-    val viewState by viewModel.viewState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.onAppear()
     }
 
-    val isRefreshing = viewState.isLoading && viewState.currentTime != null
+    val isRefreshing = uiState.isLoading && uiState.currentTime != null
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Column(
@@ -46,14 +46,14 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
             contentAlignment = Alignment.Center,
         ) {
             when {
-                viewState.currentTime != null -> {
+                uiState.currentTime != null -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text("Current Time", style = MaterialTheme.typography.labelMedium)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = viewState.currentTime!!,
+                                    text = uiState.currentTime!!,
                                     style = MaterialTheme.typography.bodyLarge,
                                 )
                             }
@@ -63,10 +63,10 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
                             Text("Refresh")
                         }
 
-                        if (viewState.errorMessage != null) {
+                        if (uiState.errorMessage != null) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = viewState.errorMessage!!,
+                                text = uiState.errorMessage!!,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error,
                             )
@@ -83,7 +83,7 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
                     }
                 }
 
-                viewState.errorMessage != null -> {
+                uiState.errorMessage != null -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Failed to load",
@@ -92,7 +92,7 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = viewState.errorMessage!!,
+                            text = uiState.errorMessage!!,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )

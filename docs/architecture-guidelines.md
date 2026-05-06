@@ -38,6 +38,7 @@ composeApp → providers → viewmodel → domain ← data
 - Subscribes to Use Case `StateFlow` for state
 - Calls Use Case `suspend` trigger functions to initiate actions
 - Never accesses repositories or API clients directly
+- Exposes UI state as an inner `data class UiState` and a `StateFlow<UiState>` named `uiState` (following Google's official UI layer naming convention)
 
 ### Providers Layer (`:providers`)
 - Single source of truth for all Koin module definitions

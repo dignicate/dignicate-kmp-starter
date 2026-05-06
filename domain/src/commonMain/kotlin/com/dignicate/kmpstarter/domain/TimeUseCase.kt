@@ -12,10 +12,10 @@ class TimeUseCase(
     private val repository: TimeRepository,
     scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
 ) {
-    private val _trigger = MutableSharedFlow<Unit>()
+    private val _fetchTrigger = MutableSharedFlow<Unit>()
 
     @OptIn(FlowPreview::class)
-    val data: StateFlow<Resource<TimeInfo>> = _trigger
+    val data: StateFlow<Resource<TimeInfo>> = _fetchTrigger
         .debounce(300.milliseconds)
         .mapToResource(
             scope = scope,
@@ -25,6 +25,6 @@ class TimeUseCase(
         )
 
     suspend fun fetch() {
-        _trigger.emit(Unit)
+        _fetchTrigger.emit(Unit)
     }
 }

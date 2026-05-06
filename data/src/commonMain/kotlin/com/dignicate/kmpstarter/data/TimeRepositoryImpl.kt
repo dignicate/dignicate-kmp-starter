@@ -2,20 +2,22 @@ package com.dignicate.kmpstarter.data
 
 import com.dignicate.kmpstarter.domain.TimeInfo
 import com.dignicate.kmpstarter.domain.TimeRepository
-import kotlinx.coroutines.channels.awaitClose
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 
 class TimeRepositoryImpl(private val apiClient: TimeApiClient) : TimeRepository {
 
-    override fun getCurrentTime(): Flow<Result<TimeInfo>> = callbackFlow {
-        try {
-            val dto = apiClient.getTime()
-            trySend(Result.success(dto.toDomainObject()))
+    override fun getCurrentTime(): Flow<Result<TimeInfo>> = flow {
+        val result = try {
+            Result.success(apiClient.getTime().toDomainObject())
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            trySend(Result.failure(e))
+            Result.failure(e)
         }
-        awaitClose { apiClient.close() }
+
+        emit(result)
     }
 }
 

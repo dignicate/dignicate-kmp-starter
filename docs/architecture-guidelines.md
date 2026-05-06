@@ -95,19 +95,23 @@ class TimeViewModel(private val useCase: GetCurrentTimeUseCase) {
 
 ## 4. Repository Pattern
 
-Repositories in the Data layer bridge async network calls into Kotlin Flows using `callbackFlow`. Wrap results in `kotlin.Result`.
+Repositories in the Data layer bridge `suspend` network calls into Kotlin Flows using `flow`. Wrap results in `kotlin.Result`.
 
 ```kotlin
-override fun getCurrentTime(): Flow<Result<TimeInfo>> = callbackFlow {
-    try {
-        val dto = apiClient.getTime()
-        trySend(Result.success(dto.toDomainObject()))
+override fun getCurrentTime(): Flow<Result<TimeInfo>> = flow {
+    val result = try {
+        Result.success(apiClient.getTime().toDomainObject())
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
-        trySend(Result.failure(e))
+        Result.failure(e)
     }
-    awaitClose { apiClient.close() }
+
+    emit(result)
 }
 ```
+
+`HttpClient` instances are owned by DI and must not be closed from repository flows.
 
 DTO-to-domain mapping is a `private` extension function inside the `RepositoryImpl` — not a separate mapper file — unless multiple consumers need it.
 

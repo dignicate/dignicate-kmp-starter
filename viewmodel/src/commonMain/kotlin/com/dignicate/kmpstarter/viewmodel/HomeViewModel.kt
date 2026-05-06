@@ -1,11 +1,10 @@
 package com.dignicate.kmpstarter.viewmodel
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.dignicate.kmpstarter.domain.Error
 import com.dignicate.kmpstarter.domain.Resource
 import com.dignicate.kmpstarter.domain.TimeUseCase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,8 +12,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val timeUseCase: TimeUseCase,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob()),
-) {
+) : ViewModel() {
     data class ViewState(
         val isLoading: Boolean = false,
         val currentTime: String? = null,
@@ -25,7 +23,7 @@ class HomeViewModel(
     val viewState: StateFlow<ViewState> = _viewState.asStateFlow()
 
     init {
-        scope.launch {
+        viewModelScope.launch {
             timeUseCase.data.collect { resource ->
                 _viewState.value = when (resource) {
                     is Resource.Initialized -> ViewState()
@@ -42,10 +40,10 @@ class HomeViewModel(
     }
 
     fun onAppear() {
-        scope.launch { timeUseCase.fetch() }
+        viewModelScope.launch { timeUseCase.fetch() }
     }
 
     fun onRefresh() {
-        scope.launch { timeUseCase.fetch() }
+        viewModelScope.launch { timeUseCase.fetch() }
     }
 }

@@ -1,4 +1,4 @@
-package com.dignicate.kmpstarter.ui.screens
+package com.dignicate.kmpstarter.ui.feature.launch
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

@@ -1,4 +1,4 @@
-package com.dignicate.kmpstarter.ui.screens
+package com.dignicate.kmpstarter.ui.feature.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -106,26 +106,5 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
                 else -> CircularProgressIndicator()
             }
         }
-    }
-}
-
-@Composable
-fun CatalogTabScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Catalog Screen Content")
-    }
-}
-
-@Composable
-fun SavedTabScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Saved Screen Content")
-    }
-}
-
-@Composable
-fun MenuTabScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Menu Screen Content")
     }
 }

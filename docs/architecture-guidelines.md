@@ -171,10 +171,8 @@ com.dignicate.kmpstarter.ui
 ```
 com.dignicate.kmpstarter.viewmodel
 └── feature/
-    ├── home/
-    │   └── HomeViewModel.kt
-    └── greeting/
-        └── GreetingViewModel.kt
+    └── home/
+        └── HomeViewModel.kt
 ```
 
 ### Rules

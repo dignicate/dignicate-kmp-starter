@@ -262,36 +262,29 @@ case "$build_input" in
       exit 1
     fi
 
-    if [ "$selected_type" == "android" ]; then
-      CMD="./gradlew :composeApp:installDebug ${GRADLE_ARGS[*]}"
-    elif [ "$selected_type" == "ios-sim" ]; then
-      CMD="xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator -destination \"id=$selected_id\" build"
-    fi
-
     echo
-    echo "Ready to deploy to: $selected_info"
-    echo "Command: $CMD"
+    echo "Deploying to: $selected_info"
     echo
-    read -rp "Run directly or copy to clipboard? [c/r] (default: r): " action
-    action=${action:-r}
-
-    if [ "$action" = "c" ]; then
-      if command -v pbcopy &> /dev/null; then
-        printf "%s" "$CMD" | pbcopy
-        echo "Command copied to clipboard."
-      else
-        echo "pbcopy not found. Command:"
-        echo "$CMD"
-      fi
-      exit 0
-    else
-      echo "Executing: $CMD"
-    fi
 
     if [ "$selected_type" == "android" ]; then
       ./gradlew :composeApp:installDebug "${GRADLE_ARGS[@]}"
       echo "Starting app on $selected_id..."
       adb -s "$selected_id" shell am start -n com.dignicate.kmpstarter/com.dignicate.kmpstarter.MainActivity
+
+      echo "Waiting for app to start..."
+      APP_PID=""
+      for _ in {1..5}; do
+        APP_PID=$(adb -s "$selected_id" shell pidof -s com.dignicate.kmpstarter 2>/dev/null | tr -d '\r' | xargs || true)
+        [ -n "$APP_PID" ] && break
+        sleep 1
+      done
+      if [ -n "$APP_PID" ]; then
+        echo "Tailing logcat (PID=$APP_PID, Ctrl+C to stop)..."
+        adb -s "$selected_id" logcat --pid="$APP_PID" -v time
+      else
+        echo "[!] Could not detect PID. Tailing full logcat (Ctrl+C to stop)..."
+        adb -s "$selected_id" logcat -v time
+      fi
     elif [ "$selected_type" == "ios-sim" ]; then
       echo "Building for iOS Simulator ($selected_id)..."
       xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj \
@@ -309,6 +302,9 @@ case "$build_input" in
       xcrun simctl install "$selected_id" "$APP_PATH/$APP_NAME"
       echo "Launching com.dignicate.kmpstarter..."
       xcrun simctl launch "$selected_id" com.dignicate.kmpstarter
+
+      echo "Tailing simulator logs (Ctrl+C to stop)..."
+      xcrun simctl spawn "$selected_id" log stream --level debug --predicate 'process == "kmpstarter"'
     fi
     ;;
 esac

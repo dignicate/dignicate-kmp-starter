@@ -25,6 +25,8 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":domain"))
             implementation(project(":core"))
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.androidx.lifecycle.viewmodel)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

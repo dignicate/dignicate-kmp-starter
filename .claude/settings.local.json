@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :viewmodel:compileCommonMainKotlinMetadata)",
+      "Bash(./gradlew :providers:compileCommonMainKotlinMetadata)",
+      "Bash(./gradlew :composeApp:compileCommonMainKotlinMetadata)"
+    ]
+  }
+}

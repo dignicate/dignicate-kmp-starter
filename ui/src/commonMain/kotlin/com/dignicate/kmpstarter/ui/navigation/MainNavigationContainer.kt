@@ -1,4 +1,4 @@
-package com.dignicate.kmpstarter.ui.components
+package com.dignicate.kmpstarter.ui.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -23,11 +23,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
-import com.dignicate.kmpstarter.ui.MainTab
-import com.dignicate.kmpstarter.ui.screens.CatalogTabScreen
-import com.dignicate.kmpstarter.ui.screens.HomeTabScreen
-import com.dignicate.kmpstarter.ui.screens.MenuTabScreen
-import com.dignicate.kmpstarter.ui.screens.SavedTabScreen
+import com.dignicate.kmpstarter.ui.components.AppDrawer
+import com.dignicate.kmpstarter.ui.components.CustomAppBar
+import com.dignicate.kmpstarter.ui.feature.catalog.CatalogTabScreen
+import com.dignicate.kmpstarter.ui.feature.home.HomeTabScreen
+import com.dignicate.kmpstarter.ui.feature.menu.MenuTabScreen
+import com.dignicate.kmpstarter.ui.feature.saved.SavedTabScreen
+import com.dignicate.kmpstarter.viewmodel.feature.home.HomeViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -35,7 +37,8 @@ fun MainNavigationContainer(
     selectedTab: MainTab,
     onTabSelected: (MainTab) -> Unit,
     version: String,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    homeViewModel: HomeViewModel,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -94,7 +97,7 @@ fun MainNavigationContainer(
             Box(modifier = Modifier.padding(paddingValues)) {
                 saveableStateHolder.SaveableStateProvider(selectedTab) {
                     when (selectedTab) {
-                        MainTab.HOME -> HomeTabScreen()
+                        MainTab.HOME -> HomeTabScreen(homeViewModel)
                         MainTab.CATALOG -> CatalogTabScreen()
                         MainTab.SAVED -> SavedTabScreen()
                         MainTab.MENU -> MenuTabScreen()

@@ -8,8 +8,4 @@ class TimeApiClientImpl(private val httpClient: HttpClient) : TimeApiClient {
 
     override suspend fun getTime(): TimeDto =
         httpClient.get("https://freeapi.dignicate.com/time/v1/current").body()
-
-    override fun close() {
-        httpClient.close()
-    }
 }

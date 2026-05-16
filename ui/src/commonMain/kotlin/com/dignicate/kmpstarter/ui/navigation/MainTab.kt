@@ -1,4 +1,4 @@
-package com.dignicate.kmpstarter.ui
+package com.dignicate.kmpstarter.ui.navigation
 
 enum class MainTab(val label: String) {
     HOME("Home"),

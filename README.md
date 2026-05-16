@@ -1,6 +1,12 @@
 # dignicate-kmp-starter
 A practical Kotlin Multiplatform starter template for building Android and iOS apps with Compose Multiplatform. Includes common app structure such as navigation, tabs, drawer, and settings.
 
+## Architecture
+
+This project follows a layered Clean Architecture for Kotlin Multiplatform. For details on module structure, layer responsibilities, and implementation patterns (UseCase, ViewModel, Compose), see:
+
+- [Architecture Guidelines](docs/architecture-guidelines.md)
+
 ## Getting Started
 
 ### Build Script

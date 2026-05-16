@@ -7,20 +7,40 @@ This project follows a layered Clean Architecture for Kotlin Multiplatform. For 
 
 - [Architecture Guidelines](docs/architecture-guidelines.md)
 
-## Getting Started
+## Build Flavors / Environments
 
-### Build Script
-You can use the provided build script to handle environment switching and icon generation.
+The app builds for three environments (`dev`, `stg`, `prod`) with distinct application/bundle identifiers and a compile-time `APP_ENV` value surfaced in the Debug Menu. See:
+
+- [Build Flavors](docs/build-flavors.md)
+
+Quick reference:
 
 ```bash
-./scripts/build.sh
+# Android
+./gradlew :composeApp:assembleDevDebug
+./gradlew :composeApp:installStgDebug
+./gradlew :composeApp:bundleProdRelease
+
+# iOS — pick a shared scheme: kmpstarter-{dev,stg,prod}
+xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj \
+           -scheme kmpstarter-dev \
+           -configuration Debug-Dev \
+           -sdk iphonesimulator build
 ```
 
+## Getting Started
+
 ### Environment-Specific Icons
-Icons are automatically generated based on the selected environment (`prd`, `stg`, `dev`).
-1. Place your 1024x1024 base image at `config/icons/{env}/base.png`.
-2. Run `./scripts/build.sh` and select the environment.
-3. The script will generate icons for both Android and iOS using ImageMagick.
+
+Source images live under `icons/{prd,stg,dev}/` (`icon.png`, `foreground.png`, `background.png`). The icon generation module (`scripts/modules/icon.sh`) resizes them into the Android `mipmap-*` and iOS `AppIcon.appiconset` outputs.
+
+To regenerate icons only (without a build):
+
+```bash
+./scripts/build.sh --codegen-only
+```
+
+**Note**: icon generation currently writes into a shared `composeApp/src/androidMain/res/` and the single iOS `AppIcon.appiconset`, so only one environment's icons are baked in at a time. Migration to per-flavor source sets (`composeApp/src/<flavor>/res/`) is an open follow-up — see [Build Flavors §6](docs/build-flavors.md#6-open-follow-ups). The interactive build menu in `build.sh` also predates the flavor system; for builds, prefer the Gradle / xcodebuild commands shown above.
 
 **Prerequisites:**
 - ImageMagick: `brew install imagemagick`

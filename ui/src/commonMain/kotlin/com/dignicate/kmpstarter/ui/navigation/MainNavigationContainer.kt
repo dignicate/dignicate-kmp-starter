@@ -37,7 +37,9 @@ fun MainNavigationContainer(
     selectedTab: MainTab,
     onTabSelected: (MainTab) -> Unit,
     version: String,
+    showsDebugMenu: Boolean,
     onOpenSettings: () -> Unit,
+    onOpenDebugMenu: () -> Unit,
     homeViewModel: HomeViewModel,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -49,7 +51,9 @@ fun MainNavigationContainer(
         drawerContent = {
             AppDrawer(
                 version = version,
+                showsDebugMenu = showsDebugMenu,
                 onOpenSettings = onOpenSettings,
+                onOpenDebugMenu = onOpenDebugMenu,
                 onClose = { scope.launch { drawerState.close() } }
             )
         }

@@ -43,6 +43,7 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
         buildConfigField("String", "VERSION_NAME", "\"${libs.versions.app.version.get()}\"")
+        buildConfigField("String", "PACKAGE_NAME", "\"com.dignicate.kmpstarter\"")
     }
 
     buildFeatures {

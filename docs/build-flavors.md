@@ -143,7 +143,5 @@ The script never deletes existing Configurations or schemes; it only adds or upd
 
 ## 6. Open follow-ups
 
-- `scripts/build.sh` and `icons/{prd,stg,dev}/` predate the flavor system and use the short name `prd` plus a `-Penv` Gradle property. They have not yet been re-wired against `productFlavors` or per-flavor source sets, so:
-  - `build.sh` no longer drives flavor selection; CLI users should invoke `./gradlew :composeApp:assembleDevDebug` etc. directly.
-  - Icon generation currently writes into `composeApp/src/androidMain/res/`, which is shared across flavors. Producing per-flavor icons requires moving into `composeApp/src/<flavor>/res/` source sets.
-- Release signing per flavor (separate keystores) is not configured.
+- Icon generation (`scripts/build.sh` + `scripts/modules/icon.sh`) currently writes into `composeApp/src/androidMain/res/`, shared across flavors, so only one environment's icons are baked in at a time. Producing per-flavor icons requires moving the output into `composeApp/src/<flavor>/res/` source sets. The iOS side has the same constraint: a single `AppIcon.appiconset` is overwritten regardless of the selected scheme.
+- Release signing per flavor (separate keystores) is not configured. All flavors currently sign with the debug keystore for `Release` builds.

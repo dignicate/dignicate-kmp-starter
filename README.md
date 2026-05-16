@@ -30,9 +30,17 @@ xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj \
 
 ## Getting Started
 
+### Interactive Build Script
+
+```bash
+./scripts/build.sh
+```
+
+Prompts for environment (`prod` / `stg` / `dev`), then for build type (Android AAB / APK, iOS Ad-Hoc / App Store IPA, or run on a connected device / simulator). It regenerates icons for the chosen env and invokes the matching Gradle task or `xcodebuild` scheme.
+
 ### Environment-Specific Icons
 
-Source images live under `icons/{prd,stg,dev}/` (`icon.png`, `foreground.png`, `background.png`). The icon generation module (`scripts/modules/icon.sh`) resizes them into the Android `mipmap-*` and iOS `AppIcon.appiconset` outputs.
+Source images live under `icons/{prod,stg,dev}/` (`icon.png`, `foreground.png`, `background.png`). The icon module (`scripts/modules/icon.sh`) resizes them into the Android `mipmap-*` and iOS `AppIcon.appiconset` outputs.
 
 To regenerate icons only (without a build):
 
@@ -40,7 +48,7 @@ To regenerate icons only (without a build):
 ./scripts/build.sh --codegen-only
 ```
 
-**Note**: icon generation currently writes into a shared `composeApp/src/androidMain/res/` and the single iOS `AppIcon.appiconset`, so only one environment's icons are baked in at a time. Migration to per-flavor source sets (`composeApp/src/<flavor>/res/`) is an open follow-up — see [Build Flavors §6](docs/build-flavors.md#6-open-follow-ups). The interactive build menu in `build.sh` also predates the flavor system; for builds, prefer the Gradle / xcodebuild commands shown above.
+**Note**: icon generation overwrites a shared `composeApp/src/androidMain/res/` and the single iOS `AppIcon.appiconset`, so only one environment's icons are baked in at a time. Per-flavor source sets is an open follow-up — see [Build Flavors §6](docs/build-flavors.md#6-open-follow-ups).
 
 **Prerequisites:**
 - ImageMagick: `brew install imagemagick`

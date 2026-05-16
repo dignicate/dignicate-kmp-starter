@@ -135,3 +135,58 @@ All bindings are declared in `providers/src/commonMain/.../KoinModule.kt`. New c
 | Async / flows | `kotlinx.coroutines` |
 | Dependency injection | Koin 4 |
 | UI | Compose Multiplatform |
+
+## 7. Package Structure (Feature-Oriented)
+
+Within the `:ui` and `:viewmodel` modules, screen-level code is organized by **feature**, not by layer. Cross-cutting concerns live in dedicated sibling packages.
+
+### `:ui` module
+
+```
+com.dignicate.kmpstarter.ui
+├── feature/
+│   ├── home/
+│   │   ├── HomeTabScreen.kt
+│   │   └── components/       # Feature-private composables (only if needed)
+│   ├── catalog/
+│   │   └── CatalogTabScreen.kt
+│   ├── saved/
+│   │   └── SavedTabScreen.kt
+│   ├── menu/
+│   │   └── MenuTabScreen.kt
+│   ├── settings/
+│   │   └── SettingsScreen.kt
+│   └── launch/
+│       └── LaunchScreen.kt
+├── components/               # Reusable composables shared across features
+│   ├── CustomAppBar.kt
+│   └── AppDrawer.kt
+└── navigation/               # Tab enums, navigation containers, route definitions
+    ├── MainTab.kt
+    └── MainNavigationContainer.kt
+```
+
+### `:viewmodel` module
+
+```
+com.dignicate.kmpstarter.viewmodel
+└── feature/
+    ├── home/
+    │   └── HomeViewModel.kt
+    └── greeting/
+        └── GreetingViewModel.kt
+```
+
+### Rules
+
+1. **One feature per package.** A new screen goes into `ui/feature/<name>/`. Its ViewModel goes into `viewmodel/feature/<name>/`. Use the same `<name>` on both sides.
+2. **Feature packages are independent.** A feature must not import from another feature's package. Cross-feature reuse goes through `ui/components/` (UI) or the `:domain` layer (logic).
+3. **`ui/components/` is for reusable UI only.** If a composable is used by exactly one feature, place it under `ui/feature/<name>/components/` instead — keep the global namespace clean.
+4. **`ui/navigation/` owns navigation surface.** Tab enums, route keys, and top-level navigation containers (e.g., `MainNavigationContainer`) live here. Individual screens never reference each other directly; they go through navigation.
+5. **No top-level files in `ui/` or `viewmodel/`.** Every file belongs to a sub-package.
+
+### Rationale
+
+- A feature can be deleted by removing one folder. Discoverability scales with feature count, not file count.
+- Pre-stages a future migration to per-feature Gradle modules (`:feature-home`, `:feature-catalog`, …) without forcing the build cost up front.
+- Mirrors `:ui` and `:viewmodel` package shapes, so jumping from a screen to its ViewModel is a predictable path.

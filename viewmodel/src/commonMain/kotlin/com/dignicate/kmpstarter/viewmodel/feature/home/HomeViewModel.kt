@@ -17,7 +17,9 @@ class HomeViewModel(
         val isLoading: Boolean = false,
         val currentTime: String? = null,
         val errorMessage: String? = null,
-    )
+    ) {
+        val isRefreshing: Boolean get() = isLoading && currentTime != null
+    }
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()

@@ -42,7 +42,6 @@ fun HomeScreen(
 ) {
     val currentTime = uiState.currentTime
     val errorMessage = uiState.errorMessage
-    val isRefreshing = uiState.isLoading && currentTime != null
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Column(
@@ -86,7 +85,7 @@ fun HomeScreen(
                         }
                     }
 
-                    if (isRefreshing) {
+                    if (uiState.isRefreshing) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center,

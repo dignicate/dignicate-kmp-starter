@@ -1,0 +1,4 @@
+#include "Config-Common.xcconfig"
+
+APP_ENV = prod
+BUNDLE_ID_SUFFIX =

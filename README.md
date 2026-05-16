@@ -7,20 +7,48 @@ This project follows a layered Clean Architecture for Kotlin Multiplatform. For 
 
 - [Architecture Guidelines](docs/architecture-guidelines.md)
 
+## Build Flavors / Environments
+
+The app builds for three environments (`dev`, `stg`, `prod`) with distinct application/bundle identifiers and a compile-time `APP_ENV` value surfaced in the Debug Menu. See:
+
+- [Build Flavors](docs/build-flavors.md)
+
+Quick reference:
+
+```bash
+# Android
+./gradlew :composeApp:assembleDevDebug
+./gradlew :composeApp:installStgDebug
+./gradlew :composeApp:bundleProdRelease
+
+# iOS — pick a shared scheme: kmpstarter-{dev,stg,prod}
+xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj \
+           -scheme kmpstarter-dev \
+           -configuration Debug-Dev \
+           -sdk iphonesimulator build
+```
+
 ## Getting Started
 
-### Build Script
-You can use the provided build script to handle environment switching and icon generation.
+### Interactive Build Script
 
 ```bash
 ./scripts/build.sh
 ```
 
+Prompts for environment (`prod` / `stg` / `dev`), then for build type (Android AAB / APK, iOS Ad-Hoc / App Store IPA, or run on a connected device / simulator). It regenerates icons for the chosen env and invokes the matching Gradle task or `xcodebuild` scheme.
+
 ### Environment-Specific Icons
-Icons are automatically generated based on the selected environment (`prd`, `stg`, `dev`).
-1. Place your 1024x1024 base image at `config/icons/{env}/base.png`.
-2. Run `./scripts/build.sh` and select the environment.
-3. The script will generate icons for both Android and iOS using ImageMagick.
+
+Source images live under `icons/{prod,stg,dev}/` (`icon.png`, `foreground.png`, `background.png`). The icon module (`scripts/modules/icon.sh`) resizes them into the Android `mipmap-*` and iOS `AppIcon.appiconset` outputs.
+
+To regenerate icons only (without a build):
+
+```bash
+./scripts/build.sh --codegen-only
+```
+
+**Note**: icon generation overwrites a shared `composeApp/src/androidMain/res/` and the single iOS `AppIcon.appiconset`, so only one environment's icons are baked in at a time. Per-flavor source sets is an open follow-up — see [Build Flavors §6](docs/build-flavors.md#6-open-follow-ups).
 
 **Prerequisites:**
 - ImageMagick: `brew install imagemagick`

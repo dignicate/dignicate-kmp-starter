@@ -66,13 +66,19 @@ read -rp "Select (1-3): " env_input
 
 case "$env_input" in
   1)
-    ENV="prd"
+    ENV="prod"
+    ENV_CAP="Prod"
+    ID_SUFFIX=""
     ;;
   2)
     ENV="stg"
+    ENV_CAP="Stg"
+    ID_SUFFIX=".stg"
     ;;
   3)
     ENV="dev"
+    ENV_CAP="Dev"
+    ID_SUFFIX=".dev"
     ;;
   *)
     echo "Cancelled."
@@ -80,7 +86,8 @@ case "$env_input" in
     ;;
 esac
 
-GRADLE_ARGS=("-Penv=$ENV")
+APP_ID="com.dignicate.kmpstarter${ID_SUFFIX}"
+IOS_SCHEME="kmpstarter-${ENV}"
 
 # === 3. 設定ファイルの同期 ===
 echo
@@ -123,20 +130,20 @@ read -rp "Select: " build_input
 
 case "$build_input" in
   1)
-    ./gradlew :composeApp:bundleRelease "${GRADLE_ARGS[@]}"
-    open_dir "composeApp/build/outputs/bundle/release"
+    ./gradlew ":composeApp:bundle${ENV_CAP}Release"
+    open_dir "composeApp/build/outputs/bundle/${ENV}Release"
     ;;
   2)
-    ./gradlew :composeApp:assembleDebug "${GRADLE_ARGS[@]}"
-    open_dir "composeApp/build/outputs/apk/debug"
+    ./gradlew ":composeApp:assemble${ENV_CAP}Debug"
+    open_dir "composeApp/build/outputs/apk/${ENV}/debug"
     ;;
   3)
     if [[ "$(uname)" != "Darwin" ]]; then
       echo "[!] iOS build requires macOS."
       exit 1
     fi
-    echo "Building iOS Ad-Hoc..."
-    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Release -archivePath build/ios/AdHoc/kmpstarter.xcarchive archive
+    echo "Building iOS Ad-Hoc (${IOS_SCHEME} / Release-${ENV_CAP})..."
+    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme "$IOS_SCHEME" -configuration "Release-${ENV_CAP}" -archivePath build/ios/AdHoc/kmpstarter.xcarchive archive
     PLIST_PATH="$SCRIPT_DIR/exportOptions/AdHoc.plist"
     if [ -f "$PLIST_PATH" ]; then
       xcodebuild -exportArchive -archivePath build/ios/AdHoc/kmpstarter.xcarchive -exportPath build/ios/AdHoc -exportOptionsPlist "$PLIST_PATH"
@@ -148,8 +155,8 @@ case "$build_input" in
       echo "[!] iOS build requires macOS."
       exit 1
     fi
-    echo "Building iOS App Store..."
-    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Release -archivePath build/ios/AppStore/kmpstarter.xcarchive archive
+    echo "Building iOS App Store (${IOS_SCHEME} / Release-${ENV_CAP})..."
+    xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme "$IOS_SCHEME" -configuration "Release-${ENV_CAP}" -archivePath build/ios/AppStore/kmpstarter.xcarchive archive
     PLIST_PATH="$SCRIPT_DIR/exportOptions/AppStore.plist"
     if [ -f "$PLIST_PATH" ]; then
       xcodebuild -exportArchive -archivePath build/ios/AppStore/kmpstarter.xcarchive -exportPath build/ios/AppStore -exportOptionsPlist "$PLIST_PATH"
@@ -267,14 +274,14 @@ case "$build_input" in
     echo
 
     if [ "$selected_type" == "android" ]; then
-      ./gradlew :composeApp:installDebug "${GRADLE_ARGS[@]}"
-      echo "Starting app on $selected_id..."
-      adb -s "$selected_id" shell am start -n com.dignicate.kmpstarter/com.dignicate.kmpstarter.MainActivity
+      ./gradlew ":composeApp:install${ENV_CAP}Debug"
+      echo "Starting app on $selected_id (${APP_ID})..."
+      adb -s "$selected_id" shell am start -n "${APP_ID}/com.dignicate.kmpstarter.MainActivity"
 
       echo "Waiting for app to start..."
       APP_PID=""
       for _ in {1..5}; do
-        APP_PID=$(adb -s "$selected_id" shell pidof -s com.dignicate.kmpstarter 2>/dev/null | tr -d '\r' | xargs || true)
+        APP_PID=$(adb -s "$selected_id" shell pidof -s "$APP_ID" 2>/dev/null | tr -d '\r' | xargs || true)
         [ -n "$APP_PID" ] && break
         sleep 1
       done
@@ -286,22 +293,23 @@ case "$build_input" in
         adb -s "$selected_id" logcat -v time
       fi
     elif [ "$selected_type" == "ios-sim" ]; then
-      echo "Building for iOS Simulator ($selected_id)..."
+      IOS_CONFIG="Debug-${ENV_CAP}"
+      echo "Building for iOS Simulator (${IOS_SCHEME} / ${IOS_CONFIG} on ${selected_id})..."
       xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj \
-                 -scheme kmpstarter \
-                 -configuration Debug \
+                 -scheme "$IOS_SCHEME" \
+                 -configuration "$IOS_CONFIG" \
                  -sdk iphonesimulator \
                  -destination "id=$selected_id" \
                  build
 
-      APP_SETTINGS=$(xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme kmpstarter -configuration Debug -sdk iphonesimulator -showBuildSettings)
+      APP_SETTINGS=$(xcodebuild -project iosApp/kmpstarter/kmpstarter.xcodeproj -scheme "$IOS_SCHEME" -configuration "$IOS_CONFIG" -sdk iphonesimulator -showBuildSettings)
       APP_PATH=$(echo "$APP_SETTINGS" | grep -m 1 "BUILT_PRODUCTS_DIR" | awk '{print $3}')
       APP_NAME=$(echo "$APP_SETTINGS" | grep -m 1 "EXECUTABLE_FOLDER_PATH" | awk '{print $3}')
 
       echo "Installing on simulator..."
       xcrun simctl install "$selected_id" "$APP_PATH/$APP_NAME"
-      echo "Launching com.dignicate.kmpstarter..."
-      xcrun simctl launch "$selected_id" com.dignicate.kmpstarter
+      echo "Launching ${APP_ID}..."
+      xcrun simctl launch "$selected_id" "$APP_ID"
 
       echo "Tailing simulator logs (Ctrl+C to stop)..."
       xcrun simctl spawn "$selected_id" log stream --level debug --predicate 'process == "kmpstarter"'

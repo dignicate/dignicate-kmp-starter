@@ -9,8 +9,8 @@ generate_icons() {
   local env=$1
   local project_root=$2
 
-  if [[ ! "$env" =~ ^(dev|stg|prd)$ ]]; then
-    echo "[!] Invalid environment: $env. Must be one of dev, stg, prd."
+  if [[ ! "$env" =~ ^(dev|stg|prod)$ ]]; then
+    echo "[!] Invalid environment: $env. Must be one of dev, stg, prod."
     return 1
   fi
 

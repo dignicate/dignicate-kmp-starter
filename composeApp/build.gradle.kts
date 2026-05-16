@@ -58,6 +58,26 @@ android {
         versionName = libs.versions.app.version.get()
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            buildConfigField("String", "APP_ENV", "\"dev\"")
+        }
+        create("stg") {
+            dimension = "environment"
+            applicationIdSuffix = ".stg"
+            versionNameSuffix = "-stg"
+            buildConfigField("String", "APP_ENV", "\"stg\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "APP_ENV", "\"prod\"")
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true

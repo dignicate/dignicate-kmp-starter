@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +25,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AppDrawer(
     version: String,
+    showsDebugMenu: Boolean,
     onOpenSettings: () -> Unit,
+    onOpenDebugMenu: () -> Unit,
     onClose: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -56,6 +59,19 @@ fun AppDrawer(
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
+
+            if (showsDebugMenu) {
+                NavigationDrawerItem(
+                    label = { Text("Debug Menu") },
+                    icon = { Icon(Icons.Default.BugReport, contentDescription = "Debug Menu") },
+                    selected = false,
+                    onClick = {
+                        onOpenDebugMenu()
+                        onClose()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
             Box(

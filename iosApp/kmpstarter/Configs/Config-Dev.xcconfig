@@ -1,0 +1,4 @@
+#include "Config-Common.xcconfig"
+
+APP_ENV = dev
+BUNDLE_ID_SUFFIX = .dev

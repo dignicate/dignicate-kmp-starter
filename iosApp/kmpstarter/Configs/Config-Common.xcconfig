@@ -1,0 +1,4 @@
+// Common settings shared across all environments.
+// Per-environment values (APP_ENV, BUNDLE_ID_SUFFIX) are defined in Config-{Dev,Stg,Prod}.xcconfig.
+
+BASE_BUNDLE_ID = com.dignicate.kmpstarter

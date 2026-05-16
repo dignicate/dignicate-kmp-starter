@@ -29,7 +29,20 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
         viewModel.onAppear()
     }
 
-    val isRefreshing = uiState.isLoading && uiState.currentTime != null
+    HomeScreen(
+        uiState = uiState,
+        onRefresh = viewModel::onRefresh,
+    )
+}
+
+@Composable
+fun HomeScreen(
+    uiState: HomeViewModel.UiState,
+    onRefresh: () -> Unit,
+) {
+    val currentTime = uiState.currentTime
+    val errorMessage = uiState.errorMessage
+    val isRefreshing = uiState.isLoading && currentTime != null
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Column(
@@ -46,27 +59,27 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
             contentAlignment = Alignment.Center,
         ) {
             when {
-                uiState.currentTime != null -> {
+                currentTime != null -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text("Current Time", style = MaterialTheme.typography.labelMedium)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = uiState.currentTime!!,
+                                    text = currentTime,
                                     style = MaterialTheme.typography.bodyLarge,
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.onRefresh() }) {
+                        Button(onClick = onRefresh) {
                             Text("Refresh")
                         }
 
-                        if (uiState.errorMessage != null) {
+                        if (errorMessage != null) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = uiState.errorMessage!!,
+                                text = errorMessage,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error,
                             )
@@ -83,7 +96,7 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
                     }
                 }
 
-                uiState.errorMessage != null -> {
+                errorMessage != null -> {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = "Failed to load",
@@ -92,12 +105,12 @@ fun HomeTabScreen(viewModel: HomeViewModel) {
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = uiState.errorMessage!!,
+                            text = errorMessage,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.onRefresh() }) {
+                        Button(onClick = onRefresh) {
                             Text("Retry")
                         }
                     }
